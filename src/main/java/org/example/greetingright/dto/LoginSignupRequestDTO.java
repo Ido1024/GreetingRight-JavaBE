@@ -1,10 +1,7 @@
 package org.example.greetingright.dto;
 
-import lombok.Getter;
-import lombok.Setter;
 
-
-public class LoginRequestDTO {
+public class LoginSignupRequestDTO {
     private String username;
     private String password;
 
