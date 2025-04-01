@@ -1,13 +1,11 @@
 package org.example.greetingright.controller;
 
-import org.example.greetingright.dto.LoginRequestDTO;
+import org.example.greetingright.dto.LoginSignupRequestDTO;
 import org.example.greetingright.entity.User;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.example.greetingright.repository.UserRepository;
 
@@ -25,7 +23,7 @@ public class LoginController {
 
     //todo return jwt
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<?> login(@RequestBody LoginSignupRequestDTO loginRequestDTO) {
         String username = loginRequestDTO.getUsername();
         String password = loginRequestDTO.getPassword();
         if (userRepository.findByUsername(username) != null) {

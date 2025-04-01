@@ -23,7 +23,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/register", "/home", "/error", "/login").permitAll() // allow /login explicitly
+                        .requestMatchers("/register", "/home", "/error", "/login","/signup").permitAll() // allow /login explicitly
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable()) // disable Spring Security's login page
