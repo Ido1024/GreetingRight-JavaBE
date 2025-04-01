@@ -23,27 +23,25 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/register", "/home", "/error").permitAll()
+                        .requestMatchers("/register", "/home", "/error", "/login").permitAll() // allow /login explicitly
                         .anyRequest().authenticated()
                 )
-                .formLogin(formLogin -> formLogin
-                        .defaultSuccessUrl("/home", true)
-                        .permitAll()
-                )
+                .formLogin(form -> form.disable()) // disable Spring Security's login page
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login?logout=true")
+                        .permitAll()
                 )
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // disable CSRF for API-style login
                 .sessionManagement(session -> session
                         .invalidSessionUrl("/login")
                         .maximumSessions(1)
                         .expiredUrl("/login?expired=true")
                 );
-
         return http.build();
     }
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }
