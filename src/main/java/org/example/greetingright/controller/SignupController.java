@@ -3,6 +3,7 @@ package org.example.greetingright.controller;
 import org.example.greetingright.dto.LoginSignupRequestDTO;
 import org.example.greetingright.entity.User;
 import org.example.greetingright.repository.UserRepository;
+import org.example.greetingright.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,22 +16,20 @@ import java.util.Optional;
 public class SignupController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
-    public SignupController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public SignupController(UserRepository userRepository, PasswordEncoder passwordEncoder, UserService userService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody LoginSignupRequestDTO loginSignupRequestDTO) {
-        Optional<User> existingUser = userRepository.findByUsername(loginSignupRequestDTO.getUsername());
-        if (existingUser.isPresent()) {
+    public ResponseEntity<?> signup(@RequestBody LoginSignupRequestDTO dto) {
+        User createdUser = userService.createUser(dto.getUsername(), dto.getPassword());
+        if (createdUser == null) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
-        User user = new User();
-        user.setUsername(loginSignupRequestDTO.getUsername());
-        user.setPassword(passwordEncoder.encode(loginSignupRequestDTO.getPassword()));
-        userRepository.save(user);
-        return ResponseEntity.ok().body("User successfully created");
+        return ResponseEntity.ok("User successfully created");
     }
 }
