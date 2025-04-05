@@ -28,6 +28,9 @@ public class User {
     )
     private Set<Role> roles;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private RefreshToken refreshToken;
+
     public Long getId() {
         return id;
     }
