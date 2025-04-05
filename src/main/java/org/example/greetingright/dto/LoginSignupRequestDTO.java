@@ -5,6 +5,10 @@ public class LoginSignupRequestDTO {
     private String username;
     private String password;
 
+    public LoginSignupRequestDTO(String username, String password) {
+        this.username = username;
+        this.password = password != null ? password : ""; // Default to an empty string if password is null
+    }
     public String getUsername() {
         return username;
     }
