@@ -14,13 +14,10 @@ import java.util.Optional;
 
 @RestController
 public class LoginController {
-    private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
     private final UserService userService;
 
-    public LoginController(PasswordEncoder passwordEncoder, UserRepository userRepository, UserService userService) {
-        this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
+    public LoginController(UserService userService) {
+
         this.userService = userService;
     }
 

@@ -14,13 +14,9 @@ import java.util.Optional;
 
 @RestController
 public class SignupController {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
-    public SignupController(UserRepository userRepository, PasswordEncoder passwordEncoder, UserService userService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+    public SignupController(UserService userService) {
         this.userService = userService;
     }
 
