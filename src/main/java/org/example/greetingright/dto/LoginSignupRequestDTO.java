@@ -2,7 +2,6 @@ package org.example.greetingright.dto;
 
 import lombok.Data;
 
-@Data
 public class LoginSignupRequestDTO {
     private String username;
     private String password;

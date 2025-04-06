@@ -43,8 +43,7 @@ public class JwtUtil {
     }
 
     // Generate a JWT token for a user, first time login
-    public String generateToken(LoginSignupRequestDTO loginSignupRequestDTO,
-                                UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails) {
 
         Map<String, Object> claims = new HashMap<>();
 

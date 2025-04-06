@@ -26,8 +26,6 @@ public class AuthenticationService {
     private final RefreshTokenService refreshTokenService;
 
 
-
-
     public LoginResponseDTO authenticate(LoginSignupRequestDTO authenticationRequest, String ipAddress) {
         // load the user details from the database using the username by calling the loadUserByUsername() method
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(authenticationRequest.getUsername());
@@ -38,7 +36,7 @@ public class AuthenticationService {
         }
 
         // generate the JWT token
-        String jwtToken = jwtUtil.generateToken(authenticationRequest, userDetails);
+        String jwtToken = jwtUtil.generateToken(userDetails);
 
         // get the user's roles
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
@@ -46,13 +44,14 @@ public class AuthenticationService {
         // return the AuthenticationResponse object
         return generateNewTokens(authenticationRequest.getUsername(), ipAddress);
     }
+
     public LoginResponseDTO refresh(String refreshToken, String ipAddress) {
         RefreshToken validRefreshToken = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
         if (!validRefreshToken.getIpAddress().equals(ipAddress)) {
             throw new RuntimeException("IP address mismatch");
         }
-        if(validRefreshToken.getExpiryDate().isBefore(Instant.now())){
+        if (validRefreshToken.getExpiryDate().isBefore(Instant.now())) {
             throw new RuntimeException("Refresh token ");
         }
 
@@ -61,7 +60,7 @@ public class AuthenticationService {
 
     private LoginResponseDTO generateNewTokens(String username, String ipAdress) {
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-        String jwtToken = jwtUtil.generateToken(new LoginSignupRequestDTO(username, null), userDetails);
+        String jwtToken = jwtUtil.generateToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(username, ipAdress);
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
         return new LoginResponseDTO(jwtToken, refreshToken.getToken(), roles);

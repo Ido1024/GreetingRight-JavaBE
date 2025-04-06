@@ -6,8 +6,10 @@ import org.example.greetingright.entity.RefreshToken;
 import org.example.greetingright.entity.User;
 import org.example.greetingright.repository.RefreshTokenRepository;
 import org.example.greetingright.repository.UserRepository;
+import org.example.greetingright.security.CustomUserDetailsService;
 import org.example.greetingright.security.JwtProperties;
 import org.example.greetingright.security.JwtUtil;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -17,6 +19,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class RefreshTokenService {
     private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService customUserDetailsService;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -29,5 +32,18 @@ public class RefreshTokenService {
         refreshToken.setIpAddress(ipAddress);
         refreshToken.setToken(jwtUtil.generateRefreshToken(refreshToken));
         return refreshTokenRepository.save(refreshToken);
+    }
+    public String refreshAccessToken(String refreshToken, String ipAddress) {
+        RefreshToken validRefreshToken = refreshTokenRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        // Check IP address match
+        if (!validRefreshToken.getIpAddress().equals(ipAddress)) {
+            throw new RuntimeException("IP address mismatch");
+        }
+
+        String username = validRefreshToken.getUser().getUsername();
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+        return jwtUtil.generateToken(userDetails); // Generate new access token
     }
 }
