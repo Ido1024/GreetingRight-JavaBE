@@ -3,8 +3,10 @@ package org.example.greetingright.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.greetingright.dto.LoginResponseDTO;
 import org.example.greetingright.dto.LoginSignupRequestDTO;
+import org.example.greetingright.dto.RefreshTokenRequest;
 import org.example.greetingright.entity.User;
 import org.example.greetingright.service.AuthenticationService;
+import org.example.greetingright.service.RefreshTokenService;
 import org.example.greetingright.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoginController {
     private final UserService userService;
     private final AuthenticationService authenticationService;
-    public LoginController(UserService userService, AuthenticationService authenticationService) {
+    private final HttpServletRequest request;
+    private final RefreshTokenService refreshTokenService;
+
+    public LoginController(UserService userService, AuthenticationService authenticationService, HttpServletRequest request, RefreshTokenService refreshTokenService) {
 
         this.userService = userService;
         this.authenticationService = authenticationService;
+        this.request = request;
+        this.refreshTokenService = refreshTokenService;
     }
     @GetMapping("/home")
     public String home() {
@@ -41,15 +48,11 @@ public class LoginController {
         // Optionally generate and return a JWT here
         return ResponseEntity.ok(authResponse);
     }
+
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@RequestBody String refreshToken, HttpServletRequest request) {
-        try {
-            System.out.println("refresh token: " + refreshToken);
-            LoginResponseDTO authResponse = authenticationService.refresh(refreshToken, request.getRemoteAddr());
-            return ResponseEntity.ok(authResponse);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<String> refreshToken(@RequestBody RefreshTokenRequest requestT) {
+        String ipAddress = request.getRemoteAddr(); // Get the IP address from the request
+        String newAccessToken = refreshTokenService.refreshAccessToken(requestT.getRefreshToken(), ipAddress);
+        return ResponseEntity.ok(newAccessToken);
     }
 }
-//todo, fix; Bearer doesn't work. not really generate refresh token
