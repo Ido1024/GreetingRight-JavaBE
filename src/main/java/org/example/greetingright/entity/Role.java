@@ -7,17 +7,16 @@ import lombok.Setter;
 
 import java.util.Set;
 
-@Data
 @Entity
 
 public class Role {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "roleID", nullable = false, unique = true)
     private Long id;
     @Column(name = "rolename", nullable = false, unique = true)
     private String roleName;
-    @ManyToMany(mappedBy = "roles")
+    @ManyToMany(mappedBy = "roles" , fetch = FetchType.EAGER)
     private Set<User> users;
 
     public Long getId() {

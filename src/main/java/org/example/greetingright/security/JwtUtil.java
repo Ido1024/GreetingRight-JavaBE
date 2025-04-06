@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.apache.tomcat.util.http.parser.HttpParser.isToken;
+
 @Component
 public class JwtUtil {
 
@@ -55,7 +57,7 @@ public class JwtUtil {
                 .and()
                 .claim("roles", userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
-                .claim("issuedBy", "learning JWT with Spring Security")
+                .claim("issuedBy", "learning JWT with Spring Security") //todo reaplce it
                 .signWith(getKey())
                 .compact();
     }
@@ -72,7 +74,7 @@ public class JwtUtil {
                 .and()
                 .claim("roles", userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
-                .claim("issuedBy", "learning JWT with Spring Security")
+                .claim("issuedBy", "learning JWT with Spring Security") //todo replace it
                 .signWith(getKey())
                 .compact();
     }
@@ -90,7 +92,7 @@ public class JwtUtil {
 
             // check if the username extracted from the JWT token matches the username in the UserDetails object
             // and the token is not expired
-            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            return (username.equals(userDetails.getUsername()) && !isToken(token));
         } catch (Exception e) {
             // Handle the invalid signature here
             throw new RuntimeException("The token signature is invalid: " + e.getMessage());

@@ -7,12 +7,11 @@ import lombok.Setter;
 
 import java.util.Set;
 
-@Data
 @Entity
 
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "userID", nullable = false, unique = true)
     private Long id;
     @Column(name = "password", nullable = false)
@@ -20,11 +19,11 @@ public class User {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "userRole",
-            joinColumns = @JoinColumn(name = "roleID"),
-            inverseJoinColumns = @JoinColumn(name = "userID")
+            joinColumns = @JoinColumn(name = "userID"),
+            inverseJoinColumns = @JoinColumn(name = "roleID")
     )
     private Set<Role> roles;
 
