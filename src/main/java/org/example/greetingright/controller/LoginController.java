@@ -8,6 +8,7 @@ import org.example.greetingright.service.AuthenticationService;
 import org.example.greetingright.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,8 +22,11 @@ public class LoginController {
         this.userService = userService;
         this.authenticationService = authenticationService;
     }
+    @GetMapping("/home")
+    public String home() {
+        return "welcome to the home page";
+    }
 
-    //todo return jwt
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginSignupRequestDTO loginSignupRequestDTO, HttpServletRequest request) {
         User user = userService.loginUser(loginSignupRequestDTO.getUsername(), loginSignupRequestDTO.getPassword());
@@ -35,7 +39,7 @@ public class LoginController {
         System.out.println("roles: " + authResponse.getRoles());
         System.out.println("username: " + loginSignupRequestDTO.getUsername());
         // Optionally generate and return a JWT here
-        return ResponseEntity.ok("Login successful");
+        return ResponseEntity.ok(authResponse);
     }
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(@RequestBody String refreshToken, HttpServletRequest request) {
@@ -44,7 +48,8 @@ public class LoginController {
             LoginResponseDTO authResponse = authenticationService.refresh(refreshToken, request.getRemoteAddr());
             return ResponseEntity.ok(authResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
+//todo, fix; Bearer doesn't work. not really generate refresh token

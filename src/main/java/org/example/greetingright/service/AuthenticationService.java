@@ -53,7 +53,7 @@ public class AuthenticationService {
             throw new RuntimeException("IP address mismatch");
         }
         if(validRefreshToken.getExpiryDate().isBefore(Instant.now())){
-            throw new RuntimeException("Refresh token expired");
+            throw new RuntimeException("Refresh token ");
         }
 
         return generateNewTokens(validRefreshToken.getUser().getUsername(), ipAddress);
