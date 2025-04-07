@@ -46,4 +46,7 @@ public class RefreshTokenService {
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
         return jwtUtil.generateToken(userDetails); // Generate new access token
     }
+    public void invalidateRefreshToken(String token) {
+        refreshTokenRepository.deleteByToken(token);
+    }
 }
