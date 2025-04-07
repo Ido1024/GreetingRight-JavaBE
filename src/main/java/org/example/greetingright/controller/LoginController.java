@@ -29,6 +29,7 @@ public class LoginController {
         this.request = request;
         this.refreshTokenService = refreshTokenService;
     }
+
     @GetMapping("/home")
     public String home() {
         return "welcome to the home page";
@@ -40,7 +41,8 @@ public class LoginController {
         if (user == null) {
             return ResponseEntity.badRequest().body("Invalid username or password");
         }
-        LoginResponseDTO authResponse = authenticationService.authenticate(loginSignupRequestDTO,request.getRemoteAddr());
+        String ipAddress = request.getRemoteAddr(); // Get the IP address from the request
+        LoginResponseDTO authResponse = authenticationService.authenticate(loginSignupRequestDTO, ipAddress);
         System.out.println("jwt token: " + authResponse.getAccessToken());
         System.out.println("Refresh token: " + authResponse.getRefreshToken());
         System.out.println("roles: " + authResponse.getRoles());
@@ -50,9 +52,9 @@ public class LoginController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<String> refreshToken(@RequestBody RefreshTokenRequest requestT) {
+    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest requestT) {
         String ipAddress = request.getRemoteAddr(); // Get the IP address from the request
-        String newAccessToken = refreshTokenService.refreshAccessToken(requestT.getRefreshToken(), ipAddress);
-        return ResponseEntity.ok(newAccessToken);
+        LoginResponseDTO authResponse = authenticationService.refresh(requestT, ipAddress);
+        return ResponseEntity.ok(authResponse);
     }
 }
