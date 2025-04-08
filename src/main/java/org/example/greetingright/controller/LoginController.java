@@ -53,8 +53,23 @@ public class LoginController {
 
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest requestT) {
+        String refreshToken = requestT.getRefreshToken();
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.badRequest().body("Refresh token is required .");
+        }
         String ipAddress = request.getRemoteAddr(); // Get the IP address from the request
         LoginResponseDTO authResponse = authenticationService.refresh(requestT, ipAddress);
         return ResponseEntity.ok(authResponse);
+    }
+
+    //todo add navigate to home page after logout.
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody RefreshTokenRequest requestT) {
+        String refreshToken = requestT.getRefreshToken();
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.badRequest().body("Refresh token is required.");
+        }
+        refreshTokenService.invalidateRefreshToken(refreshToken);
+        return ResponseEntity.ok("Logged out successfully.");
     }
 }

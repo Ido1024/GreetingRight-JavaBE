@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.example.greetingright.dto.LoginSignupRequestDTO;
 import org.example.greetingright.entity.RefreshToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -26,12 +28,14 @@ public class JwtUtil {
 
     private final Key key;  // Store the generated key in a field
     private final CustomUserDetailsService customUserDetailsService;
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class); // Add Logger
 
     public JwtUtil(CustomUserDetailsService customUserDetailsService) {
         try {
             // private final String SECRET_KEY = JwtProperties.SECRET;
             KeyGenerator secretKeyGen = KeyGenerator.getInstance("HmacSHA256");
             this.key = Keys.hmacShaKeyFor(secretKeyGen.generateKey().getEncoded());
+            logger.info("JwtUtil - Initialized with Secret Key: {}", this.key); // Log key on initialization
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
@@ -44,8 +48,8 @@ public class JwtUtil {
 
     // Generate a JWT token for a user, first time login
     public String generateToken(UserDetails userDetails) {
-
         Map<String, Object> claims = new HashMap<>();
+        logger.info("JwtUtil - Generating Access Token with Key: {}", getKey()); // Log key during generation
 
         return Jwts.builder()
                 .claims()
@@ -64,6 +68,7 @@ public class JwtUtil {
     public String generateRefreshToken(RefreshToken refreshToken){
         Map<String, Object> claims = new HashMap<>();
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(refreshToken.getUser().getUsername());
+        logger.info("JwtUtil - Generating Refresh Token with Key: {}", getKey()); // Log key during generation
         return Jwts.builder()
                 .claims()
                 .add(claims)
@@ -91,7 +96,7 @@ public class JwtUtil {
 
             // check if the username extracted from the JWT token matches the username in the UserDetails object
             // and the token is not expired
-            return (username.equals(userDetails.getUsername()) && !isToken(token));
+            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
         } catch (Exception e) {
             // Handle the invalid signature here
             throw new RuntimeException("The token signature is invalid: " + e.getMessage());

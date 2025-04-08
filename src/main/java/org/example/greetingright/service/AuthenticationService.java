@@ -8,11 +8,15 @@ import org.example.greetingright.entity.RefreshToken;
 import org.example.greetingright.repository.RefreshTokenRepository;
 import org.example.greetingright.security.CustomUserDetailsService;
 import org.example.greetingright.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -25,6 +29,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class); // Add Logger
 
 
     public LoginResponseDTO authenticate(LoginSignupRequestDTO authenticationRequest, String ipAddress) {
@@ -46,14 +51,17 @@ public class AuthenticationService {
         return generateNewTokens(authenticationRequest.getUsername(), ipAddress);
     }
 
-    public LoginResponseDTO refresh(RefreshTokenRequest refreshToken, String ipAddress) {
-        RefreshToken validRefreshToken = refreshTokenRepository.findByToken(refreshToken.getRefreshToken())
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+    public LoginResponseDTO refresh(RefreshTokenRequest refreshTokenRequest, String ipAddress) {
+        RefreshToken validRefreshToken = refreshTokenRepository.findByToken(refreshTokenRequest.getRefreshToken())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
+
+        // IP check
         if (!validRefreshToken.getIpAddress().equals(ipAddress)) {
-            throw new RuntimeException("IP address mismatch");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "IP address mismatch");
         }
+
         if (validRefreshToken.getExpiryDate().isBefore(Instant.now())) {
-            throw new RuntimeException("Refresh token ");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token expired");
         }
 
         return generateNewTokens(validRefreshToken.getUser().getUsername(), ipAddress);
@@ -64,6 +72,7 @@ public class AuthenticationService {
         String jwtToken = jwtUtil.generateToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(username, ipAdress);
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
+        logger.info("AuthenticationService - Generating new tokens for user: {}", username); // Log new token generation
         return new LoginResponseDTO(jwtToken, refreshToken.getToken(), roles);
     }
 }

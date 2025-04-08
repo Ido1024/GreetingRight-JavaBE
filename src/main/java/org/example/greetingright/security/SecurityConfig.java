@@ -29,13 +29,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/register", "/home", "/error", "/login", "/signup", "/refresh-token").permitAll()
+                        .requestMatchers("/register", "/home", "/error", "/login", "/signup", "/refresh-token", "/logout").permitAll()
                         .anyRequest().authenticated()
                 )
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login?logout=true")
-                        .permitAll()
-                )
+                .logout(logout -> logout.disable())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, customUserDetailsService),
                         UsernamePasswordAuthenticationFilter.class);
         return http.build();
