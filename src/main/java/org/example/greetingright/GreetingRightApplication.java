@@ -12,4 +12,6 @@ public class GreetingRightApplication {
     //todo make sure to delete the token after logout.
     //todo refactor name. function \ classes
     //todo remove the logger stuff- for debug
+    //todo add roles (also, when creating automatic is USER role. also adminPage)
+    //todo when logout \ refresh-token called. delete the row in the DB. Where is the access token saved?
  }
