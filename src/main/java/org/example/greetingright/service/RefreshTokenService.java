@@ -9,6 +9,8 @@ import org.example.greetingright.repository.UserRepository;
 import org.example.greetingright.security.CustomUserDetailsService;
 import org.example.greetingright.security.JwtProperties;
 import org.example.greetingright.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class RefreshTokenService {
     private final CustomUserDetailsService customUserDetailsService;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private static final Logger logger = LoggerFactory.getLogger(RefreshTokenService.class); // Add Logger
 
     @Transactional
     public RefreshToken createRefreshToken(String username, String ipAddress){
@@ -30,6 +33,7 @@ public class RefreshTokenService {
         refreshToken.setUser(user.orElse(null));
         refreshToken.setExpiryDate(Instant.now().plusMillis(JwtProperties.REFRESH_EXPIRATION_TIME));
         refreshToken.setIpAddress(ipAddress);
+        logger.info("RefreshTokenService - Creating Refresh Token for user: {}, IP: {}", username, ipAddress); // Log refresh token creation
         refreshToken.setToken(jwtUtil.generateRefreshToken(refreshToken));
         return refreshTokenRepository.save(refreshToken);
     }
@@ -44,9 +48,12 @@ public class RefreshTokenService {
 
         String username = validRefreshToken.getUser().getUsername();
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+        logger.info("RefreshTokenService - Refreshing Access Token for user: {}", username); // Log access token refresh
         return jwtUtil.generateToken(userDetails); // Generate new access token
     }
+    @Transactional
     public void invalidateRefreshToken(String token) {
+        logger.info("RefreshTokenService - Invalidating Refresh Token: {}", token);
         refreshTokenRepository.deleteByToken(token);
     }
 }
