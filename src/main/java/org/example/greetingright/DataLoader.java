@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -27,14 +28,30 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (userRepository.count() == 0) {
+            // Create roles
             Role adminRole = new Role();
-            adminRole.setRoleName("ADMIN");
+            adminRole.setRoleName("ROLE_ADMIN");
             roleRepository.save(adminRole);
-            User defaultUser = new User();
-            defaultUser.setUsername("admin");
-            defaultUser.setPassword(passwordEncoder.encode("admin"));
-            defaultUser.setRoles(Set.of(adminRole));
-            userRepository.save(defaultUser);
+
+            Role userRole = new Role();
+            userRole.setRoleName("ROLE_USER");
+            roleRepository.save(userRole);
+
+            // Create admin user and assign both ADMIN and USER roles
+            User adminUser = new User();
+            adminUser.setUsername("admin");
+            adminUser.setPassword(passwordEncoder.encode("admin"));
+            adminUser.setRoles(Set.of(adminRole)); // Assign both roles
+            adminUser.setDatasetWishIDs(new HashSet<>());
+            userRepository.save(adminUser);
+
+            // Create user account with USER role
+            User normalUser = new User();
+            normalUser.setUsername("user");
+            normalUser.setPassword(passwordEncoder.encode("user"));
+            normalUser.setRoles(Set.of(userRole)); // Assign only USER role
+            normalUser.setDatasetWishIDs(new HashSet<>());
+            userRepository.save(normalUser);
         }
     }
 }
