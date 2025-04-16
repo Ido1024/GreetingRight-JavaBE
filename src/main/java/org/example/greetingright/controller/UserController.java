@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.List;
 
 @RestController
@@ -23,8 +25,9 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<?> getAllUsers() {
-        System.out.println("GET /api/auth/users called"); // Add logging
+    public ResponseEntity<?> getAllUsers(HttpServletRequest request) {
+        System.out.println("GET /api/auth/users called");
+        System.out.println("Authorization Header: " + request.getHeader("Authorization")); // Log the Authorization header
         List<UserDTO> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }

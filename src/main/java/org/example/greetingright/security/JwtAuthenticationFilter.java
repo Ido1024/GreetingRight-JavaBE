@@ -17,8 +17,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    final private JwtUtil jwtUtil;
-    final private CustomUserDetailsService customUserDetailsService;
+    private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -30,52 +30,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         if (shouldNotFilter(request)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // retrieve the Authorization header from the request
         String header = request.getHeader(JwtProperties.HEADER_STRING);
-        String token;
+        String token = null;
 
-
-        // extract the token from the hea`der if it's present
         if (header != null && header.startsWith(JwtProperties.TOKEN_PREFIX)) {
-            token = header.substring(JwtProperties.TOKEN_PREFIX.length());
-        } else {
-            // alternatively, try to get the token from a query parameter
-            token = request.getParameter("token");
+            token = header.substring(JwtProperties.TOKEN_PREFIX.length()).trim();
+        } else if (request.getParameter("token") != null) {
+            token = request.getParameter("token").trim();
         }
 
         try {
-            if (token != null) {
-                // extract the username from the token
+            if (token != null && !token.isEmpty()) {
                 String username = jwtUtil.extractUsername(token);
-                // load user details using the extracted username
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
-                // validate the token with the loaded user details
                 if (jwtUtil.validateToken(token, userDetails)) {
-                    // create an authentication object and set it in the Security Context
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
         } catch (UsernameNotFoundException | AuthenticationCredentialsNotFoundException ex) {
-            // Return 401 Unauthorized for invalid credentials
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write(ex.getMessage());
             return;
         } catch (Exception ex) {
-            // For other exceptions, return 500 Internal Server Error
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("An error occurred while processing the token");
             return;
         }
 
-        // pass the request along the filter chain
         filterChain.doFilter(request, response);
     }
 }

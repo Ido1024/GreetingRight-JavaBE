@@ -50,7 +50,7 @@ public class SecurityConfig {
                                 "/refresh-token",
                                 "/logout"
                         ).permitAll()
-                        .requestMatchers("/api/auth/users").permitAll()
+                        .requestMatchers("/api/auth/users").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/auth/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
                 .logout(logout -> logout.disable())
