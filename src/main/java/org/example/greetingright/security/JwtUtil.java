@@ -2,8 +2,8 @@ package org.example.greetingright.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.example.greetingright.dto.LoginSignupRequestDTO;
 import org.example.greetingright.entity.RefreshToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,45 +11,41 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.apache.tomcat.util.http.parser.HttpParser.isToken;
-
 @Component
 public class JwtUtil {
 
-    private final Key key;  // Store the generated key in a field
+    private final Key key;  // HMAC-SHA256 key
     private final CustomUserDetailsService customUserDetailsService;
-    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class); // Add Logger
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
     public JwtUtil(CustomUserDetailsService customUserDetailsService) {
-        try {
-            // private final String SECRET_KEY = JwtProperties.SECRET;
-            KeyGenerator secretKeyGen = KeyGenerator.getInstance("HmacSHA256");
-            this.key = Keys.hmacShaKeyFor(secretKeyGen.generateKey().getEncoded());
-            logger.info("JwtUtil - Initialized with Secret Key: {}", this.key); // Log key on initialization
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
         this.customUserDetailsService = customUserDetailsService;
+
+        // Generate a new secure key
+        SecretKey generatedKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        this.key = generatedKey;
+
+        // Print Base64 encoded key so it can be reused if needed
+        String encodedKey = Base64.getUrlEncoder().encodeToString(generatedKey.getEncoded());
+        logger.info("JwtUtil - Generated Secret Key (Base64 URL-safe): {}", encodedKey);
     }
 
     private Key getKey() {
-        return this.key;  // Use the stored key
+        return this.key;
     }
 
-    // Generate a JWT token for a user, first time login
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        logger.info("JwtUtil - Generating Access Token with Key: {}", getKey()); // Log key during generation
+        logger.info("JwtUtil - Generating Access Token with Key: {}", getKey());
 
         return Jwts.builder()
                 .claims()
@@ -58,17 +54,19 @@ public class JwtUtil {
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + JwtProperties.EXPIRATION_TIME))
                 .and()
-                .claim("roles", userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
-                .claim("issuedBy", "learning JWT with Spring Security") //todo reaplce it
-                .signWith(getKey())
+                .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateRefreshToken(RefreshToken refreshToken){
+    public String generateRefreshToken(RefreshToken refreshToken) {
         Map<String, Object> claims = new HashMap<>();
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(refreshToken.getUser().getUsername());
-        logger.info("JwtUtil - Generating Refresh Token with Key: {}", getKey()); // Log key during generation
+
+        logger.info("JwtUtil - Generating Refresh Token with Key: {}", getKey());
+
         return Jwts.builder()
                 .claims()
                 .add(claims)
@@ -76,59 +74,43 @@ public class JwtUtil {
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(Date.from(refreshToken.getExpiryDate()))
                 .and()
-                .claim("roles", userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
-                .claim("issuedBy", "learning JWT with Spring Security") //todo replace it
-                .signWith(getKey())
+                .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    /*
-    TODO stage2 added these methods
-     */
-    // Extract the expiration date from a JWT token, and implicitly validate the token
-    // This implementation implicitly validates the signature when extracting claims:
     public boolean validateToken(String token, UserDetails userDetails) {
         try {
-            // extract the username from the JWT token
             String username = extractUsername(token);
-            // If signature verification fails, extractUsername will throw an exception.
-
-            // check if the username extracted from the JWT token matches the username in the UserDetails object
-            // and the token is not expired
             return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
         } catch (Exception e) {
-            // Handle the invalid signature here
             throw new RuntimeException("The token signature is invalid: " + e.getMessage());
         }
-        // Other exceptions related to token parsing can also be caught here if necessary
     }
 
-    // Extract the username from a JWT token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    private <T> T extractClaim(String string, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(string);
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    // Extract all claims from a JWT token
     private Claims extractAllClaims(String token) {
-        SecretKey secretKey = (SecretKey) getKey();
-        return Jwts
-                .parser()
-                .verifyWith(secretKey)
-                .build().parseSignedClaims(token).getPayload();
+        return Jwts.parser()
+                .verifyWith((SecretKey) getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
-    // Check if a JWT token is expired
     private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date(System.currentTimeMillis()));
+        return extractExpiration(token).before(new Date());
     }
 
-    // Extract the expiration date from a JWT token
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }

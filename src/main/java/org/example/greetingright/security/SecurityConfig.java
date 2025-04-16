@@ -41,16 +41,26 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/register", "/home", "/error", "/login", "/signup", "/refresh-token", "/logout","/wish").permitAll()
+                        .requestMatchers(
+                                "/register",
+                                "/home",
+                                "/error",
+                                "/login",
+                                "/signup",
+                                "/refresh-token",
+                                "/logout"
+                        ).permitAll()
+                        .requestMatchers("/api/auth/users").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/auth/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
                 .logout(logout -> logout.disable())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, customUserDetailsService),
-                        UsernamePasswordAuthenticationFilter.class);
-        //todo add authentication , and maybe delete cookies
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtUtil, customUserDetailsService),
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
