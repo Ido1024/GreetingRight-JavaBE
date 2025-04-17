@@ -11,6 +11,7 @@ public class Wish {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(name = "birthday_wish", columnDefinition = "TEXT") // make sure to use TEXT for large text
     private String birthdayWish;
     private Date creationDate;
     private boolean isFavorite;
