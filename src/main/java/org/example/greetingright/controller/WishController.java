@@ -1,26 +1,28 @@
 package org.example.greetingright.controller;
 
 import org.example.greetingright.entity.Wish;
-import org.example.greetingright.service.WishService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.greetingright.service.FlaskWishServiceIMPL;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class WishController {
 
-    private final WishService wishService;
+    private final FlaskWishServiceIMPL flaskWishService;
 
-    public WishController(WishService wishService) {
-        this.wishService = wishService;
+    public WishController(FlaskWishServiceIMPL flaskWishService) {
+        this.flaskWishService = flaskWishService;
     }
 
     @PostMapping("/wish")
-    public ResponseEntity<String> getWish() {
-        return ResponseEntity.ok("Here’s a wish!");
-    }
+    public ResponseEntity<?> generateWish(@RequestBody Map<String, Object> request) {
+        Long userId = Long.valueOf(request.get("userId").toString());
+        String userRequest = request.get("text").toString();
 
+        Wish newWish = flaskWishService.generateWish(userId, userRequest);
+        return ResponseEntity.ok(newWish);
+    }
 }
