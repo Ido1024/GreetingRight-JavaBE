@@ -1,7 +1,6 @@
 package org.example.greetingright.entity;
 
 import jakarta.persistence.*;
-import java.util.Date;
 
 @Entity
 public class DatasetWish {
@@ -13,18 +12,9 @@ public class DatasetWish {
     @Column(name = "datasetWishID", nullable = false)
     private Long datasetWishID;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "creation_date", nullable = false, updatable = false)
-    private Date creationDate;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @PrePersist
-    protected void onCreate() {
-        this.creationDate = new Date();
-    }
 
     // Getters and Setters
     public Long getId() {
@@ -41,14 +31,6 @@ public class DatasetWish {
 
     public void setDatasetWishID(Long datasetWishID) {
         this.datasetWishID = datasetWishID;
-    }
-
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
     }
 
     public User getUser() {
