@@ -5,7 +5,6 @@ import org.example.greetingright.entity.Role;
 import org.example.greetingright.entity.User;
 import org.example.greetingright.repository.RoleRepository;
 import org.example.greetingright.repository.UserRepository;
-import org.example.greetingright.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +23,6 @@ public class UserServiceIMPL implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 
-
     public UserServiceIMPL(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -38,18 +36,19 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public User createUser(String username, String rawPassword) {
-
         Optional<User> existingUser = userRepository.findByUsername(username);
         if (existingUser.isPresent()) {
-            return null; //todo or throw an exception if you want cleaner error handling
+            return null; // Or throw an exception for cleaner error handling
         }
+
         Role userRole = roleRepository.findByRoleName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Default role not found"));
+
         User user = new User();
         user.setRoles(new HashSet<>(Set.of(userRole)));
-        user.setUsername(username); // automatic add the Date onCreate function inside Entity
+        user.setUsername(username); // Automatically sets the creation date via @PrePersist in the User entity
         user.setPassword(passwordEncoder.encode(rawPassword));
-        user.setDatasetWishIDs(new HashSet<>());
+
         return userRepository.save(user);
     }
 
@@ -59,25 +58,26 @@ public class UserServiceIMPL implements UserService {
         if (existingUser.isEmpty()) {
             return null;
         }
+
         User user = existingUser.get();
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             return null;
         }
-        return user; // valid user
+
+        return user; // Valid user
     }
 
     @Override
     public List<UserDTO> getAllUsers() {
         logger.info("Fetching all users from the database");
-        List<UserDTO> userDTOs = userRepository.findAll().stream()
+        return userRepository.findAll().stream()
                 .map(user -> new UserDTO(
                         user.getUsername(),
                         user.getCreationDate(),
                         user.getRoles().stream()
-                                .map(role -> role.getRoleName()) // Extract role names
+                                .map(Role::getRoleName) // Extract role names
                                 .collect(Collectors.toSet())
                 ))
                 .collect(Collectors.toList());
-        return userDTOs;
     }
 }
