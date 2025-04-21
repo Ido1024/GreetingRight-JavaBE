@@ -8,7 +8,7 @@ import java.util.Set;
 public class Wish {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "birthday_wish", columnDefinition = "TEXT") // make sure to use TEXT for large text
@@ -18,7 +18,7 @@ public class Wish {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User user;//todo change to USER ID from USER Object
 
     public Long getId() {
         return id;
