@@ -1,15 +1,13 @@
 package org.example.greetingright.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
 @Entity
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "userID", nullable = false, unique = true)
@@ -20,11 +18,6 @@ public class User {
 
     @Column(name = "username", nullable = false, unique = true)
     private String username;
-
-    @ElementCollection
-    @CollectionTable(name = "user_dataset_wishes", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "datasetWishID")
-    private Set<Long> datasetWishIDs = new HashSet<>();
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "creation_date", nullable = false, updatable = false)
@@ -44,7 +37,15 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Wish> wishes = new HashSet<>();
 
-    // Getter and Setter methods
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<DatasetWish> datasetWishes = new HashSet<>();
+
+    @PrePersist
+    protected void onCreate() {
+        this.creationDate = new Date();
+    }
+
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -85,21 +86,15 @@ public class User {
         this.wishes = wishes;
     }
 
-    public Set<Long> getDatasetWishIDs() {
-        return datasetWishIDs;
+    public Set<DatasetWish> getDatasetWishes() {
+        return datasetWishes;
     }
 
-    public void setDatasetWishIDs(Set<Long> datasetWishIDs) {
-        this.datasetWishIDs = datasetWishIDs;
+    public void setDatasetWishes(Set<DatasetWish> datasetWishes) {
+        this.datasetWishes = datasetWishes;
     }
 
     public Date getCreationDate() {
         return creationDate;
     }
-
-    @PrePersist
-    protected void onCreate() {
-        this.creationDate = new Date();
-    }
 }
-

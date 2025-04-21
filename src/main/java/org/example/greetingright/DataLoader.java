@@ -8,9 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.Set;
-
 
 @Component
 public class DataLoader implements CommandLineRunner {
@@ -23,7 +21,6 @@ public class DataLoader implements CommandLineRunner {
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
-
 
     @Override
     public void run(String... args) throws Exception {
@@ -41,8 +38,7 @@ public class DataLoader implements CommandLineRunner {
             User adminUser = new User();
             adminUser.setUsername("admin");
             adminUser.setPassword(passwordEncoder.encode("admin"));
-            adminUser.setRoles(Set.of(adminRole,userRole)); // Assign both roles
-            adminUser.setDatasetWishIDs(new HashSet<>());
+            adminUser.setRoles(Set.of(adminRole, userRole)); // Assign both roles
             userRepository.save(adminUser);
 
             // Create user account with USER role
@@ -50,7 +46,6 @@ public class DataLoader implements CommandLineRunner {
             normalUser.setUsername("user");
             normalUser.setPassword(passwordEncoder.encode("user"));
             normalUser.setRoles(Set.of(userRole)); // Assign only USER role
-            normalUser.setDatasetWishIDs(new HashSet<>());
             userRepository.save(normalUser);
         }
     }

@@ -2,7 +2,6 @@ package org.example.greetingright.entity;
 
 import jakarta.persistence.*;
 import java.util.Date;
-import java.util.Set;
 
 @Entity
 public class Wish {
@@ -11,15 +10,18 @@ public class Wish {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "birthday_wish", columnDefinition = "TEXT") // make sure to use TEXT for large text
+    @Column(name = "birthday_wish", columnDefinition = "TEXT")
     private String birthdayWish;
+
     private Date creationDate;
+
     private boolean isFavorite;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;//todo change to USER ID from USER Object
+    private User user;
 
+    // Getters and Setters
     public Long getId() {
         return id;
     }

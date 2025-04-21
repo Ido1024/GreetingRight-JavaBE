@@ -1,7 +1,9 @@
 package org.example.greetingright.service;
 
+import org.example.greetingright.entity.DatasetWish;
 import org.example.greetingright.entity.User;
 import org.example.greetingright.entity.Wish;
+import org.example.greetingright.repository.DatasetWishRepository;
 import org.example.greetingright.repository.UserRepository;
 import org.example.greetingright.repository.WishRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FlaskWishServiceIMPL {
@@ -19,10 +22,12 @@ public class FlaskWishServiceIMPL {
 
     private final WishRepository wishRepository;
     private final UserRepository userRepository;
+    private final DatasetWishRepository datasetWishRepository;
 
-    public FlaskWishServiceIMPL(WishRepository wishRepository, UserRepository userRepository) {
+    public FlaskWishServiceIMPL(WishRepository wishRepository, UserRepository userRepository, DatasetWishRepository datasetWishRepository) {
         this.wishRepository = wishRepository;
         this.userRepository = userRepository;
+        this.datasetWishRepository = datasetWishRepository;
     }
 
     public Wish generateWish(Long userId, String userRequest) {
@@ -32,7 +37,12 @@ public class FlaskWishServiceIMPL {
         }
 
         User user = userOptional.get();
-        Set<Long> datasetWishIDs = user.getDatasetWishIDs();
+
+        // Fetch all datasetWishIDs for the user
+        Set<Long> datasetWishIDs = datasetWishRepository.findByUser(user)
+                .stream()
+                .map(DatasetWish::getDatasetWishID)
+                .collect(Collectors.toSet());
 
         Map<String, Object> flaskRequest = new HashMap<>();
         flaskRequest.put("text", userRequest);
@@ -51,19 +61,22 @@ public class FlaskWishServiceIMPL {
         String newWishText = responseBody.get("wish").toString();
         Long datasetWishId = Long.valueOf(responseBody.get("wish_id").toString());
 
+        // Save the new wish
         Wish newWish = new Wish();
         newWish.setBirthdayWish(newWishText);
         newWish.setCreationDate(new Date());
         newWish.setUser(user);
         wishRepository.save(newWish);
 
-        // Track the dataset ID, not the DB ID
-        datasetWishIDs.add(datasetWishId);
-        user.setDatasetWishIDs(datasetWishIDs);
-        userRepository.save(user);
+        // Save the new dataset wish
+        DatasetWish newDatasetWish = new DatasetWish();
+        newDatasetWish.setDatasetWishID(datasetWishId);
+        newDatasetWish.setUser(user);
+        datasetWishRepository.save(newDatasetWish);
 
         return newWish;
     }
+
     public Long getUserIdByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username))
