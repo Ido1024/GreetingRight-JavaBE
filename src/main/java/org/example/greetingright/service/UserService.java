@@ -11,4 +11,6 @@ public interface UserService {
     User createUser(String username, String password);
     User loginUser(String username, String password);
     List<UserDTO> getAllUsers();
+    User updateUser(String username, String newUsername, List<String> roles, String newPassword);
+    void deleteUser(String username);
 }

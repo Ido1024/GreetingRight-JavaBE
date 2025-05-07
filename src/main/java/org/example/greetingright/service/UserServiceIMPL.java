@@ -80,4 +80,42 @@ public class UserServiceIMPL implements UserService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public User updateUser(String username, String newUsername, List<String> roles, String newPassword) {
+        Optional<User> existingUser = userRepository.findByUsername(username);
+        if (existingUser.isEmpty()) {
+            throw new IllegalArgumentException("User not found with username: " + username);
+        }
+
+        User user = existingUser.get();
+
+        // Update username if provided
+        if (newUsername != null && !newUsername.isEmpty()) {
+            user.setUsername(newUsername);
+        }
+
+        // Update roles if provided
+        if (roles != null && !roles.isEmpty()) {
+            Set<Role> updatedRoles = roles.stream()
+                    .map(roleName -> roleRepository.findByRoleName(roleName)
+                            .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleName)))
+                    .collect(Collectors.toSet());
+            user.setRoles(updatedRoles);
+        }
+        // Update password if provided
+        if (newPassword != null && !newPassword.isEmpty()) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+        }
+        return userRepository.save(user);
+    }
+
+    @Override
+    public void deleteUser(String username) {
+        Optional<User> existingUser = userRepository.findByUsername(username);
+        if (existingUser.isEmpty()) {
+            throw new IllegalArgumentException("User not found with username: " + username);
+        }
+        userRepository.delete(existingUser.get());
+    }
 }

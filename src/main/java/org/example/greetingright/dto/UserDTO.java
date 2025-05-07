@@ -6,7 +6,7 @@ import java.util.Set;
 public class UserDTO {
     private String username;
     private Date creationDate;
-    private Set<String> roles; // Add roles as a Set of Strings
+    private Set<String> roles;
 
     // Constructor
     public UserDTO(String username, Date creationDate, Set<String> roles) {
