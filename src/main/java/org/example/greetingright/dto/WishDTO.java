@@ -8,7 +8,6 @@ public class WishDTO {
     private Date creationDate;
     private boolean isFavorite;
 
-    // Constructor
     public WishDTO(Long id, String birthdayWish, Date creationDate, boolean isFavorite) {
         this.id = id;
         this.birthdayWish = birthdayWish;
@@ -16,7 +15,6 @@ public class WishDTO {
         this.isFavorite = isFavorite;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

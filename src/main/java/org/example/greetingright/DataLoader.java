@@ -24,6 +24,7 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        // Run this only if no users exist yet (first app startup with empty database)
         if (userRepository.count() == 0) {
             // Create roles
             Role adminRole = new Role();

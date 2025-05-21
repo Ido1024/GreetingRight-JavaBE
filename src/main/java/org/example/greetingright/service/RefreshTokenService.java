@@ -24,19 +24,20 @@ public class RefreshTokenService {
     private final CustomUserDetailsService customUserDetailsService;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private static final Logger logger = LoggerFactory.getLogger(RefreshTokenService.class); // Add Logger
+    private static final Logger logger = LoggerFactory.getLogger(RefreshTokenService.class);
 
-    @Transactional
+    @Transactional // Make sure this action is done in one complete step (transaction)
     public RefreshToken createRefreshToken(String username, String ipAddress){
         Optional<User> user = userRepository.findByUsername(username);
         RefreshToken refreshToken = refreshTokenRepository.findByUser(user.orElse(null)).orElseGet(RefreshToken::new);
         refreshToken.setUser(user.orElse(null));
         refreshToken.setExpiryDate(Instant.now().plusMillis(JwtProperties.REFRESH_EXPIRATION_TIME));
         refreshToken.setIpAddress(ipAddress);
-        logger.info("RefreshTokenService - Creating Refresh Token for user: {}, IP: {}", username, ipAddress); // Log refresh token creation
+        logger.info("RefreshTokenService - Creating Refresh Token for user: {}, IP: {}", username, ipAddress);
         refreshToken.setToken(jwtUtil.generateRefreshToken(refreshToken));
         return refreshTokenRepository.save(refreshToken);
     }
+    //todo remove bellow function
     public String refreshAccessToken(String refreshToken, String ipAddress) {
         RefreshToken validRefreshToken = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
@@ -48,10 +49,10 @@ public class RefreshTokenService {
 
         String username = validRefreshToken.getUser().getUsername();
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-        logger.info("RefreshTokenService - Refreshing Access Token for user: {}", username); // Log access token refresh
-        return jwtUtil.generateToken(userDetails); // Generate new access token
+        logger.info("RefreshTokenService - Refreshing Access Token for user: {}", username);
+        return jwtUtil.generateToken(userDetails);
     }
-    @Transactional
+    @Transactional // Make sure this action is done in one complete step (transaction)
     public void invalidateRefreshToken(String token) {
         logger.info("RefreshTokenService - Invalidating Refresh Token: {}", token);
         refreshTokenRepository.deleteByToken(token);

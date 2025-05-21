@@ -47,10 +47,10 @@ public class LoginController {
         System.out.println("Refresh token: " + authResponse.getRefreshToken());
         System.out.println("roles: " + authResponse.getRoles());
         System.out.println("username: " + loginSignupRequestDTO.getUsername());
-        // Optionally generate and return a JWT here
         return ResponseEntity.ok(authResponse);
     }
-
+    // Invalidate the refresh token so the user can't get
+    // new access tokens after logout (access tokens are stateless and expire on their own).
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest requestT) {
         String refreshToken = requestT.getRefreshToken();
@@ -62,7 +62,8 @@ public class LoginController {
         return ResponseEntity.ok(authResponse);
     }
 
-    //todo add navigate to home page after logout.
+    // Invalidate the refresh token so the user can't get new access tokens after logout
+    // (access tokens are stateless and expire on their own).
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody RefreshTokenRequest requestT) {
         String refreshToken = requestT.getRefreshToken();

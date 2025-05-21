@@ -19,10 +19,12 @@ public class User {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    // Store both date and time (timestamp) in the database
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "creation_date", nullable = false, updatable = false)
     private Date creationDate;
 
+    // Load roles immediately when user is loaded
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "userRole",
@@ -40,12 +42,12 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DatasetWish> datasetWishes = new HashSet<>();
 
+    // Automatically sets the creation date before inserting the entity into the database
     @PrePersist
     protected void onCreate() {
         this.creationDate = new Date();
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

@@ -8,14 +8,12 @@ public class UserDTO {
     private Date creationDate;
     private Set<String> roles;
 
-    // Constructor
     public UserDTO(String username, Date creationDate, Set<String> roles) {
         this.username = username;
         this.creationDate = creationDate;
         this.roles = roles;
     }
 
-    // Getters and setters
     public String getUsername() {
         return username;
     }

@@ -30,26 +30,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
+        // If the request is for login or refresh-token, skip JWT check
         if (shouldNotFilter(request)) {
             filterChain.doFilter(request, response);
             return;
         }
-
+        // Try to get the token from the Authorization header
         String header = request.getHeader(JwtProperties.HEADER_STRING);
         String token = null;
 
         if (header != null && header.startsWith(JwtProperties.TOKEN_PREFIX)) {
+            // Remove "Bearer " prefix from the header value
             token = header.substring(JwtProperties.TOKEN_PREFIX.length()).trim();
         } else if (request.getParameter("token") != null) {
+            // Support getting token from query parameter (optional)
             token = request.getParameter("token").trim();
         }
 
         try {
+            // Validate and authenticate the user
             if (token != null && !token.isEmpty()) {
                 String username = jwtUtil.extractUsername(token);
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
+                // Validate the token and set authentication context
                 if (jwtUtil.validateToken(token, userDetails)) {
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -57,10 +61,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (UsernameNotFoundException | AuthenticationCredentialsNotFoundException ex) {
+            // If user not found or token invalid - return 401 Unauthorized
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write(ex.getMessage());
             return;
         } catch (Exception ex) {
+            // If other error occurs - return 500 Internal Server Error
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("An error occurred while processing the token");
             return;

@@ -50,6 +50,7 @@ public class FlaskWishServiceIMPL {
         System.out.println("Request to Flask: " + flaskRequest);
         System.out.println("datasetWishIDs : " + datasetWishIDs);
 
+        // Call the Flask server
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Map> flaskResponse = restTemplate.postForEntity(
                 flaskServerUrl + "/generate-wish",
@@ -57,6 +58,7 @@ public class FlaskWishServiceIMPL {
                 Map.class
         );
 
+        // Response from Flask
         Map responseBody = flaskResponse.getBody();
         String newWishText = responseBody.get("wish").toString();
         Long datasetWishId = Long.valueOf(responseBody.get("wish_id").toString());

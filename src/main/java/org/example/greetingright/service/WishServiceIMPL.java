@@ -36,7 +36,7 @@ public class WishServiceIMPL implements WishService {
                 .sorted((w1, w2) -> w2.getCreationDate().compareTo(w1.getCreationDate()))
                 .limit(3)
                 .map(wish -> new WishDTO(
-                        wish.getId(), // Map the ID
+                        wish.getId(),
                         wish.getBirthdayWish(),
                         wish.getCreationDate(),
                         wish.isFavorite()
@@ -52,7 +52,7 @@ public class WishServiceIMPL implements WishService {
         return wishes.stream()
                 .filter(Wish::isFavorite) // Only include favorite wishes
                 .map(wish -> new WishDTO(
-                        wish.getId(), // Map the ID
+                        wish.getId(),
                         wish.getBirthdayWish(),
                         wish.getCreationDate(),
                         wish.isFavorite()

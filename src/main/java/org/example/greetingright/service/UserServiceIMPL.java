@@ -38,7 +38,7 @@ public class UserServiceIMPL implements UserService {
     public User createUser(String username, String rawPassword) {
         Optional<User> existingUser = userRepository.findByUsername(username);
         if (existingUser.isPresent()) {
-            return null; // Or throw an exception for cleaner error handling
+            return null;
         }
 
         Role userRole = roleRepository.findByRoleName("ROLE_USER")

@@ -52,7 +52,6 @@ public class WishController {
         }
     }
 
-    //todo dont think it works, check if it does. maybe need to add a function for the favorite button, casue i dont think i have one
     @GetMapping("/wishes/recent")
     public ResponseEntity<?> getRecentWishes(@RequestHeader("Authorization") String authorizationHeader) {
         try {

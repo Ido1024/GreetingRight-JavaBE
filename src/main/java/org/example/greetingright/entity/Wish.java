@@ -17,11 +17,11 @@ public class Wish {
 
     private boolean isFavorite;
 
+    // Load user only when needed
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

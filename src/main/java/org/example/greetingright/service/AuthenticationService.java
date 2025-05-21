@@ -59,7 +59,7 @@ public class AuthenticationService {
         if (!validRefreshToken.getIpAddress().equals(ipAddress)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "IP address mismatch");
         }
-
+        // Check if the refresh token is expired
         if (validRefreshToken.getExpiryDate().isBefore(Instant.now())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token expired");
         }

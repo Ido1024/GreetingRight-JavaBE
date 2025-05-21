@@ -30,7 +30,7 @@ public class SignupController {
             }
             return ResponseEntity.ok("User successfully created");
         } catch (Exception e) {
-            e.printStackTrace(); // Or use a logging framework
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while signing up");
         }
     }

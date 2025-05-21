@@ -30,8 +30,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         System.out.println("Roles for user " + user.getUsername() + ": " + user.getRoles());
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
-                .password(user.getPassword()) // Ensure the password is already encoded in the DB
-                .authorities(mapRolesToAuthorities(user.getRoles())) // Set authorities from roles
+                .password(user.getPassword())
+                .authorities(mapRolesToAuthorities(user.getRoles()))
                 .build();
     }
     private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles) {

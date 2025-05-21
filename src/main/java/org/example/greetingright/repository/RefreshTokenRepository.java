@@ -18,8 +18,8 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     Optional<RefreshToken> findByToken(String refreshToken);
 
-    @Transactional
-    @Modifying(clearAutomatically = true)
+    @Transactional // Make sure this action is done in one complete step (transaction)
+    @Modifying(clearAutomatically = true) //This query changes the database (not just reads), and clears old saved data after
     @Query("DELETE FROM RefreshToken r WHERE r.token = :token")
     void deleteByToken(@Param("token") String token);
 
