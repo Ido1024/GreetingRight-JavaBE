@@ -103,16 +103,33 @@ public class JwtUtil {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims); // Apply resolver to get specific claim
     }
-
+/*
     // Parses the JWT token and returns all claims
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .verifyWith((SecretKey) getKey()) // Use the secret key to verify the token
+                .verifyWith((SecretKey) getKey()) // Use the secret key to verify the token, if signature is invalid - won't work
                 .build()
                 .parseSignedClaims(token) // Parse the token
                 .getPayload(); // Get the claims payload
     }
-
+*/
+private Claims extractAllClaims(String token) {
+    try {
+        return Jwts.parser()
+                .verifyWith((SecretKey) getKey()) // Use the secret key to verify the token, if signature is invalid - won't work
+                .build()
+                .parseSignedClaims(token) // Parse the token
+                .getPayload(); // Get the claims payload
+    } catch (io.jsonwebtoken.security.SignatureException ex) {
+        throw new RuntimeException("Invalid JWT signature: " + ex.getMessage());
+    } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+        throw new RuntimeException("JWT token expired: " + ex.getMessage());
+    } catch (io.jsonwebtoken.MalformedJwtException ex) {
+        throw new RuntimeException("Malformed JWT token: " + ex.getMessage());
+    } catch (io.jsonwebtoken.JwtException ex) {
+        throw new RuntimeException("Invalid JWT token: " + ex.getMessage());
+    }
+}
     // Checks if the token is expired
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
